@@ -1,0 +1,17 @@
+<?php
+
+namespace {{ namespace }};
+
+use {{ modelNamespace }}\{{ modelName }};
+use {{ baseRepositoryParentClassNamespace }};
+
+class {{ className }} extends BaseRepository
+{
+    /**
+     * @param {{ modelName }} $model
+     */
+    public function __construct({{ modelName }} $model)
+    {
+        parent::__construct($model);
+    }
+}

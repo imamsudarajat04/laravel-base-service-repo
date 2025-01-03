@@ -1,0 +1,25 @@
+{
+  "autoload": {
+    "psr-4": {
+      "Imamsudarajat04\\LaravelBaseServiceRepo\\": "src/"
+    }
+  },
+  "description": "A Laravel package for Service and Repository pattern",
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Imamsudarajat04\\LaravelBaseServiceRepo\\Providers\\LaravelBaseServiceRepoServiceProvider"
+      ]
+    }
+  },
+  "name": "imamsudarajat04/laravel-base-service-repo",
+  "require": {
+    "php": "^8.3",
+    "illuminate/support": "^10.0|^11.0",
+    "illuminate/console": "^10.0|^11",
+    "illuminate/database": "^10.0|^11"
+  },
+  "type": "library",
+  "prefer-stable": true,
+  "minimum-stability": "dev"
+}
