@@ -15,10 +15,17 @@ class MakeRepositoryCommand extends Command
                             {--without-model : Create repository without a model}';
 
     protected $description = 'Create a new repository for a model with query functionality, optionally creating a model.';
-    protected const string STUB_PATH = __DIR__ . '/../Stubs/repository.stub';
+
+    protected const string REPOSITORY_DIR = 'app/Repositories';
+    protected const string MODEL_DIR = 'app/Models';
+    protected const string REPOSITORY_STUB = __DIR__ . '/../Stubs/repository.stub';
+    protected const string MODEL_STUB = __DIR__ . '/../Stubs/model.stub';
+
     protected Filesystem $files;
 
     /**
+     * Construction
+     *
      * @param Filesystem $files
      */
     public function __construct(Filesystem $files)
@@ -29,53 +36,65 @@ class MakeRepositoryCommand extends Command
 
     /**
      * @return void
-     * @throws FileNotFoundException
      */
     public function handle(): void
     {
-        $name = $this->argument('name');
+        try {
+            $repositoryName = $this->getRepositoryName();
+            $repositoryPath = $this->getRepositoryPath($repositoryName);
+            $this->createRepository($repositoryName, $repositoryPath);
 
+            if (!$this->option('without-model')) {
+                $this->createModel();
+            }
+        } catch (\Exception $e) {
+            $this->error($e->getMessage());
+        }
+    }
+
+    /**
+     * @return string
+     */
+    protected function getRepositoryName(): string
+    {
+        $name = $this->argument('name');
         if (!str_ends_with($name, 'Repository')) {
             $name .= 'Repository';
         }
-
-        $repositoryDir = Config::get('servicerepo.target_repository_dir', 'app/Repositories');
-        $repositoryNamespace = "App\\Repositories";
-        $modelNamespace = "App\\Models";
-        $className = $name;
-        $path = base_path("{$repositoryDir}/{$className}.php");
-
-        if (!$this->files->exists(self::STUB_PATH)) {
-            $this->error("Stub file not found at " . self::STUB_PATH);
-            return;
-        }
-
-        if (!$this->files->isDirectory(base_path($repositoryDir))) {
-            $this->files->makeDirectory(base_path($repositoryDir), 0755, true);
-        }
-
-        $stub = $this->files->get(self::STUB_PATH);
-        $stub = str_replace('{{ namespace }}', $repositoryNamespace, $stub);
-        $stub = str_replace('{{ modelNamespace }}', $modelNamespace, $stub);
-        $stub = str_replace('{{ baseRepositoryParentClassNamespace }}', Config::get('servicerepo.base_repository_parent_class'), $stub);
-        $stub = str_replace('{{ className }}', $className, $stub);
-        $stub = str_replace('{{ modelName }}', $this->getModelName($name), $stub);
-
-        $this->files->put($path, $stub);
-        $this->info("Repository {$className} has been created at {$repositoryDir}");
-
-        if (!$this->option('without-model')) {
-            $this->createModel();
-        }
+        return $name;
     }
 
     /**
      * @param string $repositoryName
      * @return string
      */
-    protected function getModelName(string $repositoryName): string
+    protected function getRepositoryPath(string $repositoryName): string
     {
-        return str_replace('Repository', '', $repositoryName);
+        $repositoryDir = Config::get('servicerepo.target_repository_dir', self::REPOSITORY_DIR);
+        return base_path("{$repositoryDir}/" . str_replace('\\', '/', $repositoryName) . '.php');
+    }
+
+    /**
+     * @param string $repositoryName
+     * @param string $repositoryPath
+     * @return void
+     * @throws FileNotFoundException
+     */
+    protected function createRepository(string $repositoryName, string $repositoryPath): void
+    {
+        $directoryPath = dirname($repositoryPath);
+        $this->ensureDirectoryExists($directoryPath);
+
+        if ($this->files->exists($repositoryPath)) {
+            $this->warn("Repository {$repositoryName} already exists.");
+            return;
+        }
+
+        $stub = $this->getStubContent(self::REPOSITORY_STUB);
+        $content = $this->populateRepositoryStub($stub, $repositoryName);
+
+        $this->files->put($repositoryPath, $content);
+        $this->info("Repository {$repositoryName} created successfully at {$repositoryPath}");
     }
 
     /**
@@ -85,23 +104,84 @@ class MakeRepositoryCommand extends Command
     protected function createModel(): void
     {
         $modelName = $this->option('model') ?: $this->getModelName($this->argument('name'));
-        $modePath = app_path("Models/{$modelName}.php");
+        $modelPath = base_path(self::MODEL_DIR . "/{$modelName}.php");
 
-        if ($this->files->exists($modePath)) {
+        $this->ensureDirectoryExists(base_path(self::MODEL_DIR));
+
+        if ($this->files->exists($modelPath)) {
             $this->warn("Model {$modelName} already exists.");
             return;
         }
 
-        $stubPath = __DIR__ . '/../Stubs/model.stub';
-        if (!$this->files->exists($stubPath)) {
-            $this->error("Model stub not found at  {$stubPath}");
-            return;
+        $stub = $this->getStubContent(self::MODEL_STUB);
+        $content = str_replace('{{ className }}', $modelName, $stub);
+
+        $this->files->put($modelPath, $content);
+        $this->info("Model {$modelName} created successfully in " . self::MODEL_DIR);
+    }
+
+    /**
+     * @param string $repositoryName
+     * @return string
+     */
+    protected function getModelName(string $repositoryName): string
+    {
+        $repositoryName = str_replace('\\', '/', $repositoryName);
+        $baseName = basename($repositoryName);
+        return str_replace('Repository', '', $baseName);
+    }
+
+    /**
+     * @param string $path
+     * @return string
+     * @throws FileNotFoundException
+     */
+    protected function getStubContent(string $path): string
+    {
+        if (!$this->files->exists($path)) {
+            throw new FileNotFoundException("Stub file not found at {$path}");
         }
+        return $this->files->get($path);
+    }
 
-        $modelStub = $this->files->get($stubPath);
-        $modelStub = str_replace('{{ className }}', $modelName, $modelStub);
+    /**
+     * @param string $stub
+     * @param string $repositoryName
+     * @return string
+     */
+    protected function populateRepositoryStub(string $stub, string $repositoryName): string
+    {
+        $repositoryNamespace = $this->getNamespace($repositoryName);
+        $modelNamespace = Config::get('servicerepo.target_model_namespace', 'App\Models');
+        $baseClassNamespace = Config::get('servicerepo.base_repository_parent_class', 'BaseRepository');
+        $modelName = $this->getModelName($repositoryName);
 
-        $this->files->put($modePath, $modelStub);
-        $this->info("Model {$modelName} has been created at app/Models!");
+        return str_replace(
+            ['{{ namespace }}', '{{ modelNamespace }}', '{{ baseRepositoryParentClassNamespace }}', '{{ className }}', '{{ modelName }}'],
+            [$repositoryNamespace, $modelNamespace, $baseClassNamespace, basename($repositoryName), $modelName],
+            $stub
+        );
+    }
+
+    /**
+     * @param string $repositoryName
+     * @return string
+     */
+    protected function getNamespace(string $repositoryName): string
+    {
+        $repositoryDir = Config::get('servicerepo.target_repository_namespace', 'App\Repositories');
+        $subNamespace = str_replace('/', '\\', dirname(str_replace('\\', '/', $repositoryName)));
+        return rtrim("{$repositoryDir}\\{$subNamespace}", '\\');
+    }
+
+    /**
+     * @param string $directory
+     * @return void
+     */
+    protected function ensureDirectoryExists(string $directory): void
+    {
+        if (!$this->files->isDirectory($directory)) {
+            $this->files->makeDirectory($directory, 0755, true);
+        }
     }
 }
