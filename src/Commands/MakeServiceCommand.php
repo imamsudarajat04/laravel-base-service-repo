@@ -3,6 +3,7 @@
 namespace Imamsudarajat04\LaravelBaseServiceRepo\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use Exception;
 
@@ -18,7 +19,7 @@ class MakeServiceCommand extends Command
     {
         try {
             $name = $this->argument('name');
-            $path = base_path('app/Services');
+            $path = base_path(Config::get('servicerepo.target_service_dir', 'app/Services'));
 
             if (!File::exists($path)) {
                 File::makeDirectory($path, 0777, true, true);

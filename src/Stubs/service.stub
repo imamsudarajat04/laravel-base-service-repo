@@ -1,7 +1,7 @@
 <?php
 namespace App\Services;
 
-class DummyClass
+class DummyClass extends BaseService
 {
     //
 }
