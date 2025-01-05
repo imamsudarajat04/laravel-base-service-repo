@@ -1,7 +1,20 @@
 <?php
-namespace App\Services;
 
-class DummyClass extends BaseService
+namespace {{ namespace }};
+
+use {{ baseServiceParentClass }};
+
+/**
+ * Class {{ className }}
+ *
+ * @package {{ namespace }}
+ */
+class {{ className }} extends BaseService
 {
-    //
+    protected $repository;
+
+    public function __construct()
+    {
+        // $this->repository
+    }
 }
