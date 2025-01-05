@@ -4,11 +4,12 @@ namespace Imamsudarajat04\LaravelBaseServiceRepo\Contracts\InterfaceRepository;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
 
 interface BaseRepositoryInterface
 {
     /**
+     * Get all record on model
+     *
      * @return Collection
      */
     public function getAll(): Collection;
@@ -17,43 +18,34 @@ interface BaseRepositoryInterface
      * Find a record by its ID.
      *
      * @param string|int $id
-     * @return ?Model
+     * @return ?object
      */
-    public function findById(string|int $id): ?Model;
+    public function findById(string|int $id): ?object;
 
     /**
      * Create a new record.
      *
      * @param array $requestedData
-     * @return array
+     * @return object
      */
-    public function create(array $requestedData): array;
+    public function create(array $requestedData): object;
 
     /**
      * Update an existing record by its ID.
      *
      * @param string|int $id
      * @param array $requestedData
-     * @return array
+     * @return object|null
      */
-    public function update(string|int $id, array $requestedData): array;
+    public function update(string|int $id, array $requestedData): ?object;
 
     /**
      * Delete a record by its ID.
      *
      * @param string|int $id
-     * @return array
+     * @return boolean
      */
-    public function delete(string|int $id): array;
-
-    /**
-     * Find a record by a specific column value.
-     *
-     * @param string $column
-     * @param $value
-     * @return ?Model
-     */
-    public function findByColumn(string $column, $value): ?Model;
+    public function delete(string|int $id): bool;
 
     /**
      * Get paginated records.
@@ -62,10 +54,4 @@ interface BaseRepositoryInterface
      * @return LengthAwarePaginator
      */
     public function paginate(int $perPage = 15): LengthAwarePaginator;
-
-    /**
-     * @param array $conditions
-     * @return mixed
-     */
-    public function where(array $conditions): mixed;
 }
