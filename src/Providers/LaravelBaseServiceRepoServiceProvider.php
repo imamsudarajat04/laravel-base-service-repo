@@ -15,9 +15,11 @@ class LaravelBaseServiceRepoServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->publishes([
-            __DIR__ . '/../Config/servicerepo.php' => config_path('servicerepo.php'),
-        ]);
+        # Merge config so that users can still override configuration
+        $this->mergeConfigFrom(
+            __DIR__ . '/../Config/servicerepo.php',
+            'servicerepo'
+        );
     }
 
     /**
@@ -27,12 +29,11 @@ class LaravelBaseServiceRepoServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->mergeConfigFrom(
-            __DIR__ . '/../Config/servicerepo.php',
-            'servicerepo'
-        );
+        # Publish configuration with clear tags
+        $this->publishes([
+            __DIR__ . '/../Config/servicerepo.php' => config_path('servicerepo.php'),
+        ], 'servicerepo-config');
 
-        // Register commands if the package is used in the console
         if ($this->app->runningInConsole()) {
             $this->commands([
                 MakeServiceCommand::class,

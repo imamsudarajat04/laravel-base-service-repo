@@ -4,7 +4,6 @@
       "Imamsudarajat04\\LaravelBaseServiceRepo\\": "src/"
     }
   },
-  "description": "A Laravel package for Service and Repository pattern",
   "extra": {
     "laravel": {
       "providers": [
@@ -13,6 +12,7 @@
     }
   },
   "name": "imamsudarajat04/laravel-base-service-repo",
+  "description": "A Laravel package for Service and Repository pattern",
   "require": {
     "php": "^8.3",
     "illuminate/support": "^10.0|^11.0",

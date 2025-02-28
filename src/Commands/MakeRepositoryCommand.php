@@ -170,8 +170,21 @@ class MakeRepositoryCommand extends Command
     protected function getNamespace(string $repositoryName): string
     {
         $repositoryDir = Config::get('servicerepo.target_repository_namespace', 'App\Repositories');
-        $subNamespace = str_replace('/', '\\', dirname(str_replace('\\', '/', $repositoryName)));
-        return rtrim("{$repositoryDir}\\{$subNamespace}", '\\');
+        $normalizedRepositoryName = str_replace('\\', '/', $repositoryName);
+        if (str_contains($normalizedRepositoryName, '/')) {
+            $subNamespace = str_replace('/', '\\', dirname($normalizedRepositoryName));
+            return rtrim("{$repositoryDir}/{$subNamespace}", '\\');
+        }
+
+        return $repositoryDir;
+//        $namespaceParts = explode('/', $normalizedRepositoryName);
+//        if (count($namespaceParts) === 1) {
+//            $subNamespace = '';
+//        } else {
+//            array_pop($namespaceParts);
+//            $subNamespace = implode('\\', $namespaceParts);
+//        }
+//        return rtrim("{$repositoryDir}\\{$subNamespace}", '\\');
     }
 
     /**
