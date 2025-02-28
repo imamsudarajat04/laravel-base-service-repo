@@ -19,7 +19,7 @@ Laravel Base Service Repository Package is a customizable package designed to si
 
 2. Publish the configuration file:
    ```bash
-   php artisan vendor:publish --tag=servicerepo-config
+   php artisan vendor:publish --provider="Imamsudarajat04\LaravelBaseServiceRepo\Providers\LaravelBaseServiceRepoServiceProvider"
    ```
 
 3. Customize the configuration file located at `config/servicerepo.php` if needed.
@@ -90,7 +90,7 @@ Laravel Base Service Repository Package adalah package yang dapat dikustomisasi 
 
 2. Publikasikan file konfigurasi:
    ```bash
-   php artisan vendor:publish --tag=servicerepo-config
+   php artisan vendor:publish --provider="Imamsudarajat04\LaravelBaseServiceRepo\Providers\LaravelBaseServiceRepoServiceProvider"
    ```
 
 3. Sesuaikan file konfigurasi yang terletak di `config/servicerepo.php` jika diperlukan.
