@@ -9,10 +9,9 @@ use Illuminate\Contracts\Filesystem\FileNotFoundException;
 
 class MakeRepositoryCommand extends Command
 {
-    protected $signature = 'make:repository 
+    protected $signature = 'make:repository
                             {name : The name of the repository}
-                            {--model= : Create a model for the repository (optional)}
-                            {--without-model : Create repository without a model}';
+                            {--model= : Create a model for the repository with specified name}';
 
     protected $description = 'Create a new repository for a model with query functionality, optionally creating a model.';
 
@@ -44,7 +43,8 @@ class MakeRepositoryCommand extends Command
             $repositoryPath = $this->getRepositoryPath($repositoryName);
             $this->createRepository($repositoryName, $repositoryPath);
 
-            if (!$this->option('without-model')) {
+            // Only create model if --model option is provided
+            if ($this->option('model') !== null) {
                 $this->createModel();
             }
         } catch (\Exception $e) {
@@ -126,6 +126,7 @@ class MakeRepositoryCommand extends Command
      */
     protected function getModelName(string $repositoryName): string
     {
+        // Get class name without path
         $repositoryName = str_replace('\\', '/', $repositoryName);
         $baseName = basename($repositoryName);
         return str_replace('Repository', '', $baseName);
@@ -154,11 +155,17 @@ class MakeRepositoryCommand extends Command
         $repositoryNamespace = $this->getNamespace($repositoryName);
         $modelNamespace = Config::get('servicerepo.target_model_namespace', 'App\Models');
         $baseClassNamespace = Config::get('servicerepo.base_repository_parent_class', 'BaseRepository');
-        $modelName = $this->getModelName($repositoryName);
+        $modelName = $this->getModelName(basename($repositoryName)); // Fix: Use only the class name, not the full path
 
         return str_replace(
             ['{{ namespace }}', '{{ modelNamespace }}', '{{ baseRepositoryParentClassNamespace }}', '{{ className }}', '{{ modelName }}'],
-            [$repositoryNamespace, $modelNamespace, $baseClassNamespace, basename($repositoryName), $modelName],
+            [
+                $repositoryNamespace,
+                $modelNamespace,
+                $baseClassNamespace,
+                basename($repositoryName),
+                $modelName
+            ],
             $stub
         );
     }
@@ -170,21 +177,18 @@ class MakeRepositoryCommand extends Command
     protected function getNamespace(string $repositoryName): string
     {
         $repositoryDir = Config::get('servicerepo.target_repository_namespace', 'App\Repositories');
-        $normalizedRepositoryName = str_replace('\\', '/', $repositoryName);
-        if (str_contains($normalizedRepositoryName, '/')) {
-            $subNamespace = str_replace('/', '\\', dirname($normalizedRepositoryName));
-            return rtrim("{$repositoryDir}/{$subNamespace}", '\\');
+
+        // Fix for namespace: get the directory part, not including the class name
+        $fullPath = str_replace('\\', '/', $repositoryName);
+        $dirPart = dirname($fullPath);
+
+        // If it's just the root directory (.), we don't need a sub-namespace
+        if ($dirPart === '.') {
+            return $repositoryDir; // Return just the base namespace without any sub-namespace
         }
 
-        return $repositoryDir;
-//        $namespaceParts = explode('/', $normalizedRepositoryName);
-//        if (count($namespaceParts) === 1) {
-//            $subNamespace = '';
-//        } else {
-//            array_pop($namespaceParts);
-//            $subNamespace = implode('\\', $namespaceParts);
-//        }
-//        return rtrim("{$repositoryDir}\\{$subNamespace}", '\\');
+        $subNamespace = str_replace('/', '\\', $dirPart);
+        return rtrim("{$repositoryDir}\\{$subNamespace}", '\\');
     }
 
     /**
