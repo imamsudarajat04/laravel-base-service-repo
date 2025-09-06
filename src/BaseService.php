@@ -5,19 +5,18 @@ namespace Imamsudarajat04\LaravelBaseServiceRepo;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Imamsudarajat04\LaravelBaseServiceRepo\Contracts\InterfaceRepository\BaseRepositoryInterface;
+use Imamsudarajat04\LaravelBaseServiceRepo\Contracts\InterfaceService\BaseServiceInterface;
 
-abstract class BaseService
+abstract class BaseService implements BaseServiceInterface
 {
-    protected $repository;
-
     /**
-     * Constructor
-     *
-     * @param $repository
+     * Create a new service instance.
      */
-    public function __construct($repository)
-    {
-        $this->repository = $repository;
+    public function __construct(
+        protected BaseRepositoryInterface $repository
+    ) {
+        // Constructor property promotion
     }
 
     /**
@@ -76,13 +75,100 @@ abstract class BaseService
     }
 
     /**
-     * Paginate records.
+     * Get paginated records.
+     *
+     * @param int $perPage
+     * @return LengthAwarePaginator
+     */
+    public function getPaginated(int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->repository->paginate($perPage);
+    }
+
+    /**
+     * Paginate records (alias for getPaginated).
      *
      * @param int $perPage
      * @return LengthAwarePaginator
      */
     public function paginate(int $perPage = 15): LengthAwarePaginator
     {
-        return $this->repository->paginate($perPage);
+        return $this->getPaginated($perPage);
+    }
+
+    /**
+     * Get the repository instance.
+     *
+     * @return BaseRepositoryInterface
+     */
+    public function getRepository(): BaseRepositoryInterface
+    {
+        return $this->repository;
+    }
+
+    /**
+     * Set the repository instance.
+     *
+     * @param BaseRepositoryInterface $repository
+     * @return void
+     */
+    public function setRepository(BaseRepositoryInterface $repository): void
+    {
+        $this->repository = $repository;
+    }
+
+    /**
+     * Find records by column value.
+     *
+     * @param string $column
+     * @param mixed $value
+     * @return Collection
+     */
+    public function findBy(string $column, mixed $value): Collection
+    {
+        return $this->repository->findBy($column, $value);
+    }
+
+    /**
+     * Find first record by column value.
+     *
+     * @param string $column
+     * @param mixed $value
+     * @return Model|null
+     */
+    public function findFirstBy(string $column, mixed $value): ?Model
+    {
+        return $this->repository->findFirstBy($column, $value);
+    }
+
+    /**
+     * Check if record exists by ID.
+     *
+     * @param string|int $id
+     * @return bool
+     */
+    public function exists(string|int $id): bool
+    {
+        return $this->repository->exists($id);
+    }
+
+    /**
+     * Get count of records.
+     *
+     * @return int
+     */
+    public function count(): int
+    {
+        return $this->repository->count();
+    }
+
+    /**
+     * Get a new query builder for the model.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function newQuery()
+    {
+        return $this->repository->newQuery();
     }
 }

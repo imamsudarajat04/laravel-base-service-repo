@@ -61,4 +61,16 @@ return [
     |
     */
     "base_service_parent_class" => "Imamsudarajat04\\LaravelBaseServiceRepo\\BaseService",
+
+    /*
+    |--------------------------------------------------------------------------
+    | Base Service Interface
+    |--------------------------------------------------------------------------
+    |
+    | Specifies the interface that all generated service classes will implement.
+    | This interface defines the contract that all services must follow.
+    | By default, it is set to "Imamsudarajat04\LaravelBaseServiceRepo\Contracts\InterfaceService\BaseServiceInterface".
+    |
+    */
+    "base_service_interface" => "Imamsudarajat04\\LaravelBaseServiceRepo\\Contracts\\InterfaceService\\BaseServiceInterface",
 ];

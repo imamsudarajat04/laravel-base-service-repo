@@ -3,18 +3,29 @@
 namespace {{ namespace }};
 
 use {{ baseServiceParentClass }};
+use {{ repositoryNamespace }}\{{ repositoryName }};
+use {{ baseServiceInterface }};
 
 /**
  * Class {{ className }}
  *
  * @package {{ namespace }}
  */
-class {{ className }} extends BaseService
+class {{ className }} extends BaseService implements BaseServiceInterface
 {
-    protected $repository;
-
-    public function __construct()
-    {
-        // $this->repository
+    /**
+     * Create a new service instance.
+     */
+    public function __construct(
+        {{ repositoryName }} $repository
+    ) {
+        parent::__construct($repository);
     }
+
+    // Add your custom service methods here
+    // Example:
+    // public function getActiveUsers(): Collection
+    // {
+    //     return $this->findBy('status', 'active');
+    // }
 }

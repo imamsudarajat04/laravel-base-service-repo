@@ -8,10 +8,18 @@ use {{ baseRepositoryParentClassNamespace }};
 class {{ className }} extends BaseRepository
 {
     /**
-     * @param {{ modelName }} $model
+     * Create a new repository instance.
      */
-    public function __construct({{ modelName }} $model)
-    {
+    public function __construct(
+        {{ modelName }} $model
+    ) {
         parent::__construct($model);
     }
+
+    // Add your custom repository methods here
+    // Example:
+    // public function findByEmail(string $email): ?{{ modelName }}
+    // {
+    //     return $this->findFirstBy('email', $email);
+    // }
 }

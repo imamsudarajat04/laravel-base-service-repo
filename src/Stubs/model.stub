@@ -6,5 +6,31 @@ use Illuminate\Database\Eloquent\Model;
 
 class {{ className }} extends Model
 {
-    //
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        // Add your fillable attributes here
+    ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        // Add your hidden attributes here
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        // Add your casts here
+        // 'email_verified_at' => 'datetime',
+    ];
 }

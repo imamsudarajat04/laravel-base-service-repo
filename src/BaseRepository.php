@@ -9,14 +9,13 @@ use Imamsudarajat04\LaravelBaseServiceRepo\Contracts\InterfaceRepository\BaseRep
 
 abstract class BaseRepository implements BaseRepositoryInterface
 {
-    protected Model $model;
-
     /**
-     * @param Model $model
+     * Create a new repository instance.
      */
-    public function __construct(Model $model)
-    {
-        $this->model = $model;
+    public function __construct(
+        protected Model $model
+    ) {
+        // Constructor property promotion
     }
 
     /**
@@ -33,9 +32,9 @@ abstract class BaseRepository implements BaseRepositoryInterface
      * Find a record by its ID.
      *
      * @param int|string $id
-     * @return ?object
+     * @return Model|null
      */
-    public function findById(int|string $id): ?object
+    public function findById(int|string $id): ?Model
     {
         return $this->model->newQuery()->find($id);
     }
@@ -44,9 +43,9 @@ abstract class BaseRepository implements BaseRepositoryInterface
      * Create a new record.
      *
      * @param array $requestedData
-     * @return object
+     * @return Model
      */
-    public function create(array $requestedData): object
+    public function create(array $requestedData): Model
     {
         return $this->model->newQuery()->create($requestedData);
     }
@@ -56,9 +55,9 @@ abstract class BaseRepository implements BaseRepositoryInterface
      *
      * @param int|string $id
      * @param array $requestedData
-     * @return object|null
+     * @return Model|null
      */
-    public function update(int|string $id, array $requestedData): ?object
+    public function update(int|string $id, array $requestedData): ?Model
     {
         $record = $this->findById($id);
 
@@ -96,6 +95,82 @@ abstract class BaseRepository implements BaseRepositoryInterface
     public function paginate(int $perPage = 15): LengthAwarePaginator
     {
         return $this->model->newQuery()->paginate($perPage);
+    }
+
+    /**
+     * Get the model instance.
+     *
+     * @return Model
+     */
+    public function getModel(): Model
+    {
+        return $this->model;
+    }
+
+    /**
+     * Set the model instance.
+     *
+     * @param Model $model
+     * @return void
+     */
+    public function setModel(Model $model): void
+    {
+        $this->model = $model;
+    }
+
+    /**
+     * Get a new query builder for the model.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function newQuery()
+    {
+        return $this->model->newQuery();
+    }
+
+    /**
+     * Find records by column value.
+     *
+     * @param string $column
+     * @param mixed $value
+     * @return Collection
+     */
+    public function findBy(string $column, mixed $value): Collection
+    {
+        return $this->model->newQuery()->where($column, $value)->get();
+    }
+
+    /**
+     * Find first record by column value.
+     *
+     * @param string $column
+     * @param mixed $value
+     * @return Model|null
+     */
+    public function findFirstBy(string $column, mixed $value): ?Model
+    {
+        return $this->model->newQuery()->where($column, $value)->first();
+    }
+
+    /**
+     * Check if record exists by ID.
+     *
+     * @param int|string $id
+     * @return bool
+     */
+    public function exists(int|string $id): bool
+    {
+        return $this->model->newQuery()->where('id', $id)->exists();
+    }
+
+    /**
+     * Get count of records.
+     *
+     * @return int
+     */
+    public function count(): int
+    {
+        return $this->model->newQuery()->count();
     }
 }
 

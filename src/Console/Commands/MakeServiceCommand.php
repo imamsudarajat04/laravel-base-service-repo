@@ -1,6 +1,6 @@
 <?php
 
-namespace Imamsudarajat04\LaravelBaseServiceRepo\Commands;
+namespace Imamsudarajat04\LaravelBaseServiceRepo\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
@@ -15,7 +15,7 @@ class MakeServiceCommand extends Command
     protected Filesystem $files;
 
     protected const string SERVICE_DIR = 'app/Services';
-    protected const string SERVICE_STUB = __DIR__ . '/../Stubs/service.stub';
+    protected const string SERVICE_STUB = __DIR__ . '/../../Stubs/service.stub';
 
     public function __construct(Filesystem $files)
     {
@@ -127,10 +127,29 @@ class MakeServiceCommand extends Command
         $namespace = $this->getNamespace($serviceName);
         $className = $this->getClassName($serviceName);
         $baseServiceParentClass = Config::get('servicerepo.base_service_parent_class', 'Imamsudarajat04\\LaravelBaseServiceRepo\\BaseService');
+        $baseServiceInterface = Config::get('servicerepo.base_service_interface', 'Imamsudarajat04\\LaravelBaseServiceRepo\\Contracts\\InterfaceService\\BaseServiceInterface');
+        
+        // Generate repository namespace and name
+        $repositoryName = $this->getRepositoryName($serviceName);
+        $repositoryNamespace = $this->getRepositoryNamespace($serviceName);
 
         return str_replace(
-            ['{{ namespace }}', '{{ className }}', '{{ baseServiceParentClass }}'],
-            [$namespace, $className, $baseServiceParentClass],
+            [
+                '{{ namespace }}', 
+                '{{ className }}', 
+                '{{ baseServiceParentClass }}',
+                '{{ baseServiceInterface }}',
+                '{{ repositoryName }}',
+                '{{ repositoryNamespace }}'
+            ],
+            [
+                $namespace, 
+                $className, 
+                $baseServiceParentClass,
+                $baseServiceInterface,
+                $repositoryName,
+                $repositoryNamespace
+            ],
             $stub
         );
     }
@@ -162,5 +181,35 @@ class MakeServiceCommand extends Command
     protected function getClassName(string $serviceName): string
     {
         return basename(str_replace('\\', '/', $serviceName));
+    }
+
+    /**
+     * Get the repository name for the service.
+     *
+     * @param string $serviceName
+     * @return string
+     */
+    protected function getRepositoryName(string $serviceName): string
+    {
+        $className = $this->getClassName($serviceName);
+        return str_replace('Service', 'Repository', $className);
+    }
+
+    /**
+     * Get the repository namespace for the service.
+     *
+     * @param string $serviceName
+     * @return string
+     */
+    protected function getRepositoryNamespace(string $serviceName): string
+    {
+        $baseNamespace = rtrim(str_replace('/', '\\', Config::get('servicerepo.base_namespace', 'App\\Repositories')), '\\');
+        $subNamespace = str_replace('/', '\\', dirname(str_replace('\\', '/', $serviceName)));
+
+        if ($subNamespace === '.') {
+            return $baseNamespace;
+        }
+
+        return "{$baseNamespace}\\{$subNamespace}";
     }
 }

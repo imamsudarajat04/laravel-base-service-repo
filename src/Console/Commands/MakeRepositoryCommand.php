@@ -1,6 +1,6 @@
 <?php
 
-namespace Imamsudarajat04\LaravelBaseServiceRepo\Commands;
+namespace Imamsudarajat04\LaravelBaseServiceRepo\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
@@ -17,8 +17,8 @@ class MakeRepositoryCommand extends Command
 
     protected const string REPOSITORY_DIR = 'app/Repositories';
     protected const string MODEL_DIR = 'app/Models';
-    protected const string REPOSITORY_STUB = __DIR__ . '/../Stubs/repository.stub';
-    protected const string MODEL_STUB = __DIR__ . '/../Stubs/model.stub';
+    protected const string REPOSITORY_STUB = __DIR__ . '/../../Stubs/repository.stub';
+    protected const string MODEL_STUB = __DIR__ . '/../../Stubs/model.stub';
 
     protected Filesystem $files;
 
